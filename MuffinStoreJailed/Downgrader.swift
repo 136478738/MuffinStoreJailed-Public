@@ -25,19 +25,19 @@ struct SafariWebView: UIViewControllerRepresentable {
 
 func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
     let path = ipaTool.downloadIPAForVersion(appId: appId, appVerId: versionId)
-    print("IPA downloaded to \(path)")
+    print("IPA下载至 \(path)")
     
     let tempDir = FileManager.default.temporaryDirectory
     var contents = try! FileManager.default.contentsOfDirectory(atPath: path)
-    print("Contents: \(contents)")
+    print("内容： \(contents)")
     let destinationUrl = tempDir.appendingPathComponent("app.ipa")
     try! Zip.zipFiles(paths: contents.map { URL(fileURLWithPath: path).appendingPathComponent($0) }, zipFilePath: destinationUrl, password: nil, progress: nil)
-    print("IPA zipped to \(destinationUrl)")
+    print("IPA 压缩至 \(destinationUrl)")
     let path2 = URL(fileURLWithPath: path)
     var appDir = path2.appendingPathComponent("Payload")
     for file in try! FileManager.default.contentsOfDirectory(atPath: appDir.path) {
         if file.hasSuffix(".app") {
-            print("Found app: \(file)")
+            print("找到应用程序： \(file)")
             appDir = appDir.appendingPathComponent(file)
             break
         }
@@ -61,7 +61,7 @@ func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
             return HTTPResponse(body: signedIPAData)
         })
 
-        server.route(.GET, "install", { _ in
+        server.route(.GET, "安装", { _ in
             print("服务安装页面")
             let installPage = """
             <script type="text/javascript">
