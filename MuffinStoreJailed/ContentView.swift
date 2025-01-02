@@ -15,6 +15,8 @@ struct HeaderView: View {
                 .fontWeight(.bold)
             Text("by @mineekdev")
                 .font(.caption)
+            Text("ALLG汉化 @V_WO50")
+                .font(.caption)
         }
     }
 }
@@ -120,7 +122,7 @@ struct ContentView: View {
                     TextField("应用分享链接", text: $appLink)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                    Button("Downgrade") {
+                    Button("降级") {
                         if appLink.isEmpty {
                             return
                         }
@@ -154,7 +156,7 @@ struct ContentView: View {
         .padding()
         .onAppear {
             isAuthenticated = EncryptedKeychainWrapper.hasAuthInfo()
-            print("Found \(isAuthenticated ? "授权" : "没有授权") info in keychain")
+            print("创建 \(isAuthenticated ? "授权" : "没有授权") 钥匙串中的信息")
             if isAuthenticated {
                 guard let authInfo = EncryptedKeychainWrapper.getAuthInfo() else {
                     print("无法从钥匙串获取身份验证信息，正在注销")
@@ -167,7 +169,7 @@ struct ContentView: View {
                 password = authInfo["password"]! as! String
                 ipaTool = IPATool(appleId: appleId, password: password)
                 let ret = ipaTool?.authenticate()
-                print("Re-authenticated \(ret! ? "成功" : "未成功")")
+                print("重新认证 \(ret! ? "成功" : "未成功")")
             } else {
                 print("钥匙串中未找到身份验证信息，通过在 SEP 中生成密钥进行设置")
                 EncryptedKeychainWrapper.generateAndStoreKey()
