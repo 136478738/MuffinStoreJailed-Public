@@ -15,6 +15,7 @@ struct HeaderView: View {
                 .fontWeight(.bold)
             Text("by @mineekdev")
                 .font(.caption)
+                .foregroundStyle(.blue)
             Text("ALLG汉化 @V_WO50")
                 .font(.caption)
         }
