@@ -46,8 +46,8 @@ func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
     let infoPlist = NSDictionary(contentsOf: infoPlistPath)!
     let appBundleId = infoPlist["CFBundleIdentifier"] as! String
     let appVersion = infoPlist["CFBundleShortVersionString"] as! String
-    print("appBundleId: \(appBundleId)")
-    print("appVersion: \(appVersion)")
+    print("应用程序包 ID： \(appBundleId)")
+    print("应用程序版本： \(appVersion)")
 
     let finalURL = "https://api.palera.in/genPlist?bundleid=\(appBundleId)&name=\(appBundleId)&version=\(appVersion)&fetchurl=http://127.0.0.1:9090/signed.ipa"
     let installURL = "itms-services://?action=download-manifest&url=" + finalURL.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
