@@ -56,13 +56,13 @@ func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
         let server = Server()
 
         server.route(.GET, "signed.ipa", { _ in
-            print("Serving signed.ipa")
+            print("提供已签名的.ipa")
             let signedIPAData = try Data(contentsOf: destinationUrl)
             return HTTPResponse(body: signedIPAData)
         })
 
         server.route(.GET, "install", { _ in
-            print("Serving install page")
+            print("服务安装页面")
             let installPage = """
             <script type="text/javascript">
                 window.location = "\(installURL)"
@@ -72,10 +72,10 @@ func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
         })
         
         try! server.start(port: 9090)
-        print("Server has started listening")
+        print("服务器已开始监听")
         
         DispatchQueue.main.async {
-            print("Requesting app install")
+            print("请求安装应用")
             let majoriOSVersion = Int(UIDevice.current.systemVersion.components(separatedBy: ".").first!)!
             if majoriOSVersion >= 18 {
                 // iOS 18+ ( idk why this is needed but it seems to fix it for some people )
@@ -90,19 +90,19 @@ func downgradeAppToVersion(appId: String, versionId: String, ipaTool: IPATool) {
         while server.isRunning {
             sleep(1)
         }
-        print("Server has stopped")
+        print("服务器已停止")
     }
 }
 
 func promptForVersionId(appId: String, versionIds: [String], ipaTool: IPATool) {
     let isiPad = UIDevice.current.userInterfaceIdiom == .pad
-    let alert = UIAlertController(title: "Enter version ID", message: "Select a version to downgrade to", preferredStyle: isiPad ? .alert : .actionSheet)
+    let alert = UIAlertController(title: "输入版本号", message: "选择要降级到的版本", preferredStyle: isiPad ? .alert : .actionSheet)
     for versionId in versionIds {
         alert.addAction(UIAlertAction(title: versionId, style: .default, handler: { _ in
             downgradeAppToVersion(appId: appId, versionId: versionId, ipaTool: ipaTool)
         }))
     }
-    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+    alert.addAction(UIAlertAction(title: "取消", style: .cancel, handler: nil))
     UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
 }
 
@@ -127,19 +127,19 @@ func getAllAppVersionIdsFromServer(appId: String, ipaTool: IPATool) {
         let versionIds = json["data"] as! [Dictionary<String, Any>]
         if versionIds.count == 0 {
             DispatchQueue.main.async {
-                showAlert(title: "Error", message: "No version IDs, internal error maybe?")
+                showAlert(title: "Error", message: "没有版本 ID，可能是内部错误？")
             }
             return
         }
         DispatchQueue.main.async {
             let isiPad = UIDevice.current.userInterfaceIdiom == .pad
-            let alert = UIAlertController(title: "Select a version", message: "Select a version to downgrade to", preferredStyle: isiPad ? .alert : .actionSheet)
+            let alert = UIAlertController(title: "选择版本", message: "选择要降级到的版本", preferredStyle: isiPad ? .alert : .actionSheet)
             for versionId in versionIds {
                 alert.addAction(UIAlertAction(title: "\(versionId["bundle_version"]!)", style: .default, handler: { _ in
                     downgradeAppToVersion(appId: appId, versionId: "\(versionId["external_identifier"]!)", ipaTool: ipaTool)
                 }))
             }
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "取消", style: .cancel, handler: nil))
             UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
         }
     }
@@ -151,7 +151,7 @@ func downgradeApp(appId: String, ipaTool: IPATool) {
     var selectedVersion = ""
     let isiPad = UIDevice.current.userInterfaceIdiom == .pad
     
-    let alert = UIAlertController(title: "Version ID", message: "Do you want to enter the version ID manually or request the list of version IDs from the server?", preferredStyle: isiPad ? .alert : .actionSheet)
+    let alert = UIAlertController(title: "版本 ID", message: "您是否要手动输入版本 ID 或向服务器请求版本 ID 列表？", preferredStyle: isiPad ? .alert : .actionSheet)
     alert.addAction(UIAlertAction(title: "Manual", style: .default, handler: { _ in
         promptForVersionId(appId: appId, versionIds: versionIds, ipaTool: ipaTool)
     }))
