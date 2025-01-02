@@ -60,7 +60,7 @@ class StoreClient {
     }
 
     func generateGuid(appleId: String) -> String {
-        print("Generating GUID")
+        print("生成 GUID")
         let DEFAULT_GUID = "000C2941396B"
         let GUID_DEFAULT_PREFIX = 2
         let GUID_SEED = "CAFEBABE"
@@ -71,7 +71,7 @@ class StoreClient {
         let hashPart = h[GUID_POS..<GUID_POS + (DEFAULT_GUID.count - GUID_DEFAULT_PREFIX)]
         let guid = (defaultPart + hashPart).uppercased()
 
-        print("Came up with GUID: \(guid)")
+        print("得出 GUID： \(guid)")
         return guid
     }
 
@@ -103,10 +103,10 @@ class StoreClient {
             var authCookiesEnc = out["authCookies"] as! String
             var authCookiesEnc1 = Data(base64Encoded: authCookiesEnc)!
             authCookies = NSKeyedUnarchiver.unarchiveObject(with: authCookiesEnc1) as? [HTTPCookie]
-            print("Loaded auth info")
+            print("已加载身份验证信息")
             return true
         }
-        print("No auth info found, need to authenticate")
+        print("未找到身份验证信息，需要进行身份验证")
         return false
     }
 
@@ -153,12 +153,12 @@ class StoreClient {
                     do {
                         let resp = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as! [String: Any]
                         if resp["m-allowed"] as! Bool {
-                            print("Authentication successful")
+                            print("身份验证成功")
                             var download_queue_info = resp["download-queue-info"] as! [String: Any]
                             var dsid = download_queue_info["dsid"] as! Int
                             var httpResp = response as! HTTPURLResponse
                             var storeFront = httpResp.value(forHTTPHeaderField: "x-set-apple-store-front")
-                            print("Store front: \(storeFront!)")
+                            print("店面： \(storeFront!)")
                             self.authHeaders = [
                                 "X-Dsid": String(dsid),
                                 "iCloud-Dsid": String(dsid),
@@ -172,7 +172,7 @@ class StoreClient {
                             self.saveAuthInfo()
                             ret = true
                         } else {
-                            print("Authentication failed: \(resp["customerMessage"] as! String)")
+                            print("身份验证失败： \(resp["customerMessage"] as! String)")
                         }
                     } catch {
                         print("Error: \(error)")
@@ -211,12 +211,12 @@ class StoreClient {
             "User-Agent": "Configurator/2.17 (Macintosh; OS X 15.2; 24C5089c) AppleWebKit/0620.1.16.11.6"
         ]
         request.httpBody = try! JSONSerialization.data(withJSONObject: req, options: [])
-        print("Setting headers")
+        print("设置标题")
         for (key, value) in self.authHeaders! {
             print("Setting header \(key): \(value)")
             request.addValue(value, forHTTPHeaderField: key)
         }
-        print("Setting cookies")
+        print("设置 Cookie")
         self.session.configuration.httpCookieStorage?.setCookies(self.authCookies!, for: url, mainDocumentURL: nil)
 
         var resp = [String: Any]()
@@ -227,10 +227,10 @@ class StoreClient {
             }
             if let data = data {
                 do {
-                    print("Got response")
+                    print("得到回应")
                     let resp1 = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as! [String: Any]
                     if resp1["cancel-purchase-batch"] != nil {
-                        print("Failed to download product: \(resp1["customerMessage"] as! String)")
+                        print("无法下载产品： \(resp1["customerMessage"] as! String)")
                     }
                     resp = resp1
                 } catch {
@@ -270,7 +270,7 @@ class StoreClient {
         while datatask.state != .completed {
             sleep(1)
         }
-        print("Downloaded to \(path)")
+        print("下载至 \(path)")
     }
 }
 
@@ -281,7 +281,7 @@ class IPATool {
     var storeClient: StoreClient
 
     init(appleId: String, password: String) {
-        print("init!")
+        print("初始化！")
         session = URLSession.shared
         self.appleId = appleId
         self.password = password
@@ -289,7 +289,7 @@ class IPATool {
     }
 
     func authenticate(requestCode: Bool = false) -> Bool {
-        print("Authenticating to iTunes Store...")
+        print("正在向 iTunes Store 进行身份验证...")
         if !storeClient.tryLoadAuthInfo() {
             return storeClient.authenticate(requestCode: requestCode)
         } else {
@@ -298,36 +298,36 @@ class IPATool {
     }
 
     func getVersionIDList(appId: String) -> [String] {
-        print("Retrieving download info for appId \(appId)")
+        print("检索 appId 的下载信息 \(appId)")
         var downResp = storeClient.download(appId: appId, isRedownload: true)
         var songList = downResp["songList"] as! [[String: Any]]
         if songList.count == 0 {
-            print("Failed to get app download info!")
+            print("无法获取应用下载信息！")
             return []
         }
         var downInfo = songList[0]
         var metadata = downInfo["metadata"] as! [String: Any]
         var appVerIds = metadata["softwareVersionExternalIdentifiers"] as! [Int]
-        print("Got available version ids \(appVerIds)")
+        print("获得可用的版本 ID \(appVerIds)")
         return appVerIds.map { String($0) }
     }
 
     func downloadIPAForVersion(appId: String, appVerId: String) -> String {
-        print("Downloading IPA for app \(appId) version \(appVerId)")
+        print("下载应用程序的 IPA \(appId) version \(appVerId)")
         var downResp = storeClient.download(appId: appId, appVer: appVerId)
         var songList = downResp["songList"] as! [[String: Any]]
         if songList.count == 0 {
-            print("Failed to get app download info!")
+            print("无法获取应用下载信息！")
             return ""
         }
         var downInfo = songList[0]
         var url = downInfo["URL"] as! String
-        print("Got download URL: \(url)")
+        print("得到下载网址： \(url)")
         var fm = FileManager.default
         var tempDir = fm.temporaryDirectory
         var path = tempDir.appendingPathComponent("app.ipa").path
         if fm.fileExists(atPath: path) {
-            print("Removing existing file at \(path)")
+            print("删除现有文件 \(path)")
             try! fm.removeItem(atPath: path)
         }
         storeClient.downloadToPath(url: url, path: path)
@@ -340,7 +340,7 @@ class IPATool {
         let documentsUrl = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let destinationUrl = documentsUrl.appendingPathComponent(directoryName, isDirectory: true)
         if fm.fileExists(atPath: destinationUrl.path) {
-            print("Removing existing folder at \(destinationUrl.path)")
+            print("删除现有文件夹 \(destinationUrl.path)")
             try! fm.removeItem(at: destinationUrl)
         }
         
@@ -350,17 +350,17 @@ class IPATool {
         metadata["apple-id"] = appleId
         metadata["userName"] = appleId
         try! (metadata as NSDictionary).write(toFile: metadataPath, atomically: true)
-        print("Wrote iTunesMetadata.plist")
+        print("编写了 iTunesMetadata.plist")
         var appContentDir = ""
         let payloadDir = unzipDirectory.appendingPathComponent("Payload")
         for entry in try! fm.contentsOfDirectory(atPath: payloadDir.path) {
             if entry.hasSuffix(".app") {
-                print("Found app content dir: \(entry)")
+                print("找到应用程序内容目录： \(entry)")
                 appContentDir = "Payload/" + entry
                 break
             }
         }
-        print("Found app content dir: \(appContentDir)")
+        print("找到应用程序内容目录： \(appContentDir)")
         var scManifestData = try! Data(contentsOf: unzipDirectory.appendingPathComponent(appContentDir).appendingPathComponent("SC_Info").appendingPathComponent("Manifest.plist"))
         var scManifest = try! PropertyListSerialization.propertyList(from: scManifestData, options: [], format: nil) as! [String: Any]
         var sinfsDict = downInfo["sinfs"] as! [[String: Any]]
@@ -368,18 +368,18 @@ class IPATool {
             for (i, sinfPath) in sinfPaths.enumerated() {
                 let sinfData = sinfsDict[i]["sinf"] as! Data
                 try! sinfData.write(to: unzipDirectory.appendingPathComponent(appContentDir).appendingPathComponent(sinfPath))
-                print("Wrote sinf to \(sinfPath)")
+                print("写信给 sinf \(sinfPath)")
             }
         } else {
-            print("Manifest.plist does not exist! Assuming it is an old app without one...")
+            print("Manifest.plist 不存在！假设它是一个没有它的旧应用...")
             var infoListData = try! Data(contentsOf: unzipDirectory.appendingPathComponent(appContentDir).appendingPathComponent("Info.plist"))
             var infoList = try! PropertyListSerialization.propertyList(from: infoListData, options: [], format: nil) as! [String: Any]
             var sinfPath = appContentDir + "/SC_Info/" + (infoList["CFBundleExecutable"] as! String) + ".sinf"
             let sinfData = sinfsDict[0]["sinf"] as! Data
             try! sinfData.write(to: unzipDirectory.appendingPathComponent(sinfPath))
-            print("Wrote sinf to \(sinfPath)")
+            print("写信给 sinf \(sinfPath)")
         }
-        print("Downloaded IPA to \(unzipDirectory.path)")
+        print("下载的 IPA 到 \(unzipDirectory.path)")
         return unzipDirectory.path
     }
 }
@@ -387,7 +387,7 @@ class IPATool {
 class EncryptedKeychainWrapper {
     static func generateAndStoreKey() -> Void {
         self.deleteKey()
-        print("Generating key")
+        print("生成密钥")
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
@@ -406,16 +406,16 @@ class EncryptedKeychainWrapper {
         ]
         var error: Unmanaged<CFError>?
         guard let privateKey = SecKeyCreateRandomKey(query as CFDictionary, &error) else {
-            print("Failed to generate key!!")
+            print("生成密钥失败！！")
             return
         }
-        print("Generated key!")
-        print("Getting public key")
+        print("生成密钥！")
+        print("获取公钥")
         let pubKey = SecKeyCopyPublicKey(privateKey)!
-        print("Got public key")
+        print("获得公钥")
         let pubKeyData = SecKeyCopyExternalRepresentation(pubKey, &error)! as Data
         let pubKeyBase64 = pubKeyData.base64EncodedString()
-        print("Public key: \(pubKeyBase64)")
+        print("公钥： \(pubKeyBase64)")
     }
 
     static func deleteKey() -> Void {
@@ -436,24 +436,24 @@ class EncryptedKeychainWrapper {
         var keyRef: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &keyRef)
         if status != errSecSuccess {
-            print("Failed to get key!")
+            print("获取密钥失败！")
             return
         }
-        print("Got key!")
+        print("拿到钥匙了！")
         let key = keyRef as! SecKey
-        print("Getting public key")
+        print("获取公钥")
         let pubKey = SecKeyCopyPublicKey(key)!
-        print("Got public key")
-        print("Encrypting data")
+        print("获得公钥")
+        print("加密数据")
         var error: Unmanaged<CFError>?
         guard let encryptedData = SecKeyCreateEncryptedData(pubKey, .eciesEncryptionCofactorVariableIVX963SHA256AESGCM, base64.data(using: .utf8)! as CFData, &error) else {
-            print("Failed to encrypt data!")
+            print("加密数据失败！")
             return
         }
-        print("Encrypted data")
+        print("加密数据")
         let path = fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("authinfo").path
         fm.createFile(atPath: path, contents: encryptedData as Data, attributes: nil)
-        print("Saved encrypted auth info")
+        print("已保存加密的身份验证信息")
     }
 
     static func loadAuthInfo() -> String? {
@@ -471,19 +471,19 @@ class EncryptedKeychainWrapper {
         var keyRef: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &keyRef)
         if status != errSecSuccess {
-            print("Failed to get key!")
+            print("获取密钥失败！")
             return nil
         }
-        print("Got key!")
+        print("拿到钥匙了！")
         let key = keyRef as! SecKey
         let privKey = key
-        print("Decrypting data")
+        print("解密数据")
         var error: Unmanaged<CFError>?
         guard let decryptedData = SecKeyCreateDecryptedData(privKey, .eciesEncryptionCofactorVariableIVX963SHA256AESGCM, data as CFData, &error) else {
-            print("Failed to decrypt data!")
+            print("解密数据失败！")
             return nil
         }
-        print("Decrypted data")
+        print("解密数据")
         return String(data: decryptedData as Data, encoding: .utf8)
     }
 
