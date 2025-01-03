@@ -213,7 +213,7 @@ class StoreClient {
         request.httpBody = try! JSONSerialization.data(withJSONObject: req, options: [])
         print("设置标题")
         for (key, value) in self.authHeaders! {
-            print("Setting header \(key): \(value)")
+            print("设置标题 \(key): \(value)")
             request.addValue(value, forHTTPHeaderField: key)
         }
         print("设置 Cookie")
@@ -242,7 +242,7 @@ class StoreClient {
         while datatask.state != .completed {
             sleep(1)
         }
-        print("Got download response")
+        print("收到下载响应")
         return resp
     }
 
