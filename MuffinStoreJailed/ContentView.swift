@@ -18,6 +18,7 @@ struct HeaderView: View {
                 .foregroundStyle(.blue)
             Text("ALLG汉化 @V_WO50")
                 .font(.caption)
+                .foregroundStyle(.blue)
         }
     }
 }
@@ -101,7 +102,7 @@ struct ContentView: View {
                     VStack {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
-                        Text("Please wait...")
+                        Text("请稍等...")
                             .font(.headline)
                             .fontWeight(.bold)
                         Text("该应用正在降级。这可能需要一段时间。")
